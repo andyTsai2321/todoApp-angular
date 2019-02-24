@@ -3,11 +3,13 @@ import { NgModule } from '@angular/core';
 
 
 import { AppComponent } from './app.component';
+import { TodoStatusFilterPipe } from './todo-status-filter.pipe';
 
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    TodoStatusFilterPipe
   ],
   imports: [
     BrowserModule
