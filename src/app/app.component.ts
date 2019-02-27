@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Http } from '@angular/http';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Todo, TodoStatus } from './models';
 import { generateId } from './mock';
-import { p } from '@angular/core/src/render3';
-
 
 @Component({
   selector: 'app-root',
@@ -11,10 +10,27 @@ import { p } from '@angular/core/src/render3';
 })
 export class AppComponent implements OnInit {
 
-  ngOnInit(): void {
-    const data = JSON.parse(localStorage.getItem('todoList'));
-    this.todoList = data.map(p => new Todo({id: p.id, name: p.name, status: p.status}))
 
+
+  constructor(@Inject('api') private api: string, private http: Http) {}
+
+  ngOnInit(): void {
+    // const data = JSON.parse(localStorage.getItem('todoList'));
+    // this.todoList = data.map(p => new Todo({id: p.id, name: p.name, status: p.status}))
+    this.getTodoWithHttp().subscribe(data => this.todoList = data.json().map(p => new Todo({id: p.id, name: p.name, status: p.status})))
+  }
+
+  addTodoWithHttp(todo: Todo){
+    this.http.post(`${this.api}/todos/`, todo).subscribe();
+  }
+  getTodoWithHttp(){
+    return this.http.get(`${this.api}/todos/`)
+  }
+  updateTodoWithHttp(todo: Todo){
+    this.http.put(`${this.api}/todos/${todo.id}`, todo).subscribe()
+  }
+  deleteTodoWithHttp(todo: Todo){
+    this.http.delete(`${this.api}/todos/${todo.id}`).subscribe()
   }
 
 // 過濾條件
@@ -29,39 +45,50 @@ saveToLocalStorage(){
 }
 
 creatNewTodo(input: HTMLInputElement) {
-  this.todoList.push(new Todo({
+  const todo = new Todo({
     //確保id不重複
     id: Math.max(0, ...this.todoList.map(p => p.id)) +1,
     name: input.value,
     status: TodoStatus.Active
-  }));
+  });
+  this.todoList.push(todo);
   input.value = '';
-  this.saveToLocalStorage()
+  this.saveToLocalStorage();
+  this.addTodoWithHttp(todo);
 }
 
 updateTodo(todo: Todo, editTodo: HTMLInputElement){
   todo.name = editTodo.value;
   todo.selected = false;
-  this.saveToLocalStorage()
+  this.saveToLocalStorage();
+  this.updateTodoWithHttp(todo);
 }
 
 switchStatus(todo: Todo){
   todo.switchStatus();
-  this.saveToLocalStorage()
+  this.saveToLocalStorage();
+  this.updateTodoWithHttp(todo);
 }
 
-delectTodo(idx:number){
-  this.todoList.splice(idx, 1);
-  this.saveToLocalStorage()
+delectTodo(index:number){
+  const remove = this.todoList.splice(index, 1);
+  this.deleteTodoWithHttp(remove[0]);
+  this.saveToLocalStorage();
 }
 
 clearCompletedTodo(){
+  const completedTodo = this.todoList.filter(todo => todo.isCompleted);
+  completedTodo.forEach(todo => this.deleteTodoWithHttp(todo));
   this.todoList = this.todoList.filter(todo => !todo.isCompleted);
-  this.saveToLocalStorage()
+
+  this.saveToLocalStorage();
 }
 
 completedTodo(){
-  this.todoList.forEach(todo => todo.status = TodoStatus.Completed);
+  this.todoList.forEach(todo => {
+    todo.status = TodoStatus.Completed;
+    this.updateTodoWithHttp(todo)
+  });
   this.saveToLocalStorage()
 }
 
