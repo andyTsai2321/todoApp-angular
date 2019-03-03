@@ -2,6 +2,7 @@ import { Http } from '@angular/http';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Todo, TodoStatus } from './models';
 import { generateId } from './mock';
+import { TodoApiService } from './todo-api.service';
 
 @Component({
   selector: 'app-root',
@@ -12,20 +13,16 @@ export class AppComponent implements OnInit {
 
 
 
-  constructor(@Inject('api') private api: string, private http: Http) {}
+  constructor(@Inject('api') private api: string, private http: Http,private todoApi: TodoApiService) {}
 
   ngOnInit(): void {
+    this.todoApi.get().subscribe(
+      data => this.todoList = data.json().map(
+        p => new Todo({id: p.id, name: p.name, status: p.status})))
     // const data = JSON.parse(localStorage.getItem('todoList'));
     // this.todoList = data.map(p => new Todo({id: p.id, name: p.name, status: p.status}))
-    this.getTodoWithHttp().subscribe(data => this.todoList = data.json().map(p => new Todo({id: p.id, name: p.name, status: p.status})))
   }
 
-  addTodoWithHttp(todo: Todo){
-    this.http.post(`${this.api}/todos/`, todo).subscribe();
-  }
-  getTodoWithHttp(){
-    return this.http.get(`${this.api}/todos/`)
-  }
   updateTodoWithHttp(todo: Todo){
     this.http.put(`${this.api}/todos/${todo.id}`, todo).subscribe()
   }
@@ -54,7 +51,7 @@ creatNewTodo(input: HTMLInputElement) {
   this.todoList.push(todo);
   input.value = '';
   this.saveToLocalStorage();
-  this.addTodoWithHttp(todo);
+  this.todoApi.add(todo);
 }
 
 updateTodo(todo: Todo, editTodo: HTMLInputElement){
