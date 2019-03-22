@@ -3,6 +3,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { Todo, TodoStatus } from './models';
 import { generateId } from './mock';
 import { TodoApiService } from './todo-api.service';
+import { StorageApiService } from './storage-api.service';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +14,11 @@ export class AppComponent implements OnInit {
 
 
 
-  constructor(@Inject('api') private api: string, private http: Http,private todoApi: TodoApiService) {}
+  constructor(
+    @Inject('api') private api: string,
+    private http: Http,
+    private todoApi: TodoApiService,
+    private storageApi: StorageApiService,) {}
 
   ngOnInit(): void {
     this.todoApi.get().subscribe(
@@ -21,13 +26,6 @@ export class AppComponent implements OnInit {
         p => new Todo({id: p.id, name: p.name, status: p.status})))
     // const data = JSON.parse(localStorage.getItem('todoList'));
     // this.todoList = data.map(p => new Todo({id: p.id, name: p.name, status: p.status}))
-  }
-
-  updateTodoWithHttp(todo: Todo){
-    this.http.put(`${this.api}/todos/${todo.id}`, todo).subscribe()
-  }
-  deleteTodoWithHttp(todo: Todo){
-    this.http.delete(`${this.api}/todos/${todo.id}`).subscribe()
   }
 
 // 過濾條件
@@ -38,18 +36,25 @@ todoList: Todo[] = [
 ];
 
 saveToLocalStorage(){
-  localStorage.setItem('todoList',JSON.stringify(this.todoList))
+  this.storageApi.save(this.todoList);
 }
 
 creatNewTodo(input: HTMLInputElement) {
+
+  let inputText = input.value;
+
+  if (inputText === null || inputText === undefined || inputText.match(/^[ ]*$/)) {
+    return
+  }
+
   const todo = new Todo({
     //確保id不重複
     id: Math.max(0, ...this.todoList.map(p => p.id)) +1,
-    name: input.value,
+    name: inputText,
     status: TodoStatus.Active
   });
   this.todoList.push(todo);
-  input.value = '';
+  inputText = '';
   this.saveToLocalStorage();
   this.todoApi.add(todo);
 }
@@ -58,24 +63,24 @@ updateTodo(todo: Todo, editTodo: HTMLInputElement){
   todo.name = editTodo.value;
   todo.selected = false;
   this.saveToLocalStorage();
-  this.updateTodoWithHttp(todo);
+  this.todoApi.update(todo)
 }
 
 switchStatus(todo: Todo){
   todo.switchStatus();
   this.saveToLocalStorage();
-  this.updateTodoWithHttp(todo);
+  this.todoApi.update(todo)
 }
 
 delectTodo(index:number){
   const remove = this.todoList.splice(index, 1);
-  this.deleteTodoWithHttp(remove[0]);
+  this.todoApi.delete(remove[0]);
   this.saveToLocalStorage();
 }
 
 clearCompletedTodo(){
   const completedTodo = this.todoList.filter(todo => todo.isCompleted);
-  completedTodo.forEach(todo => this.deleteTodoWithHttp(todo));
+  completedTodo.forEach(todo => this.todoApi.delete(todo));
   this.todoList = this.todoList.filter(todo => !todo.isCompleted);
 
   this.saveToLocalStorage();
@@ -84,7 +89,7 @@ clearCompletedTodo(){
 completedTodo(){
   this.todoList.forEach(todo => {
     todo.status = TodoStatus.Completed;
-    this.updateTodoWithHttp(todo)
+    this.todoApi.update(todo);
   });
   this.saveToLocalStorage()
 }

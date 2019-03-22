@@ -12,4 +12,10 @@ export class TodoApiService {
       add(todo: Todo){
         this.http.post(`${this.api}/todos/`, todo).subscribe();
       }
+      update(todo: Todo){
+        this.http.put(`${this.api}/todos/${todo.id}`, todo).subscribe()
+      }
+      delete(todo: Todo){
+        this.http.delete(`${this.api}/todos/${todo.id}`).subscribe()
+      }
 }
