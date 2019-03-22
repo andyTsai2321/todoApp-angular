@@ -14,7 +14,7 @@ import { TodoStatusFilterPipe } from './todo-status-filter.pipe';
     BrowserModule,
     HttpModule
   ],
-  providers: [{provide: 'api', useValue: 'http://localhost:3000/api'}],
+  providers: [{provide: 'api', useValue: 'http://localhost:3000'}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
