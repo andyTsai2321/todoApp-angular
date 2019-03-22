@@ -29,13 +29,18 @@ saveToLocalStorage(){
 }
 
 creatNewTodo(input: HTMLInputElement) {
+  let inputText = input.value;
+
+ if (inputText === null || inputText === undefined || inputText.match(/^[ ]*$/)) {
+   return
+ }
   this.todoList.push(new Todo({
     //確保id不重複
     id: Math.max(0, ...this.todoList.map(p => p.id)) +1,
-    name: input.value,
+    name: inputText,
     status: TodoStatus.Active
   }));
-  input.value = '';
+  inputText = '';
   this.saveToLocalStorage()
 }
 
