@@ -2,6 +2,8 @@ import { Http } from '@angular/http';
 import { Component, OnInit, Inject } from '@angular/core';
 import { Todo, TodoStatus } from './models';
 import { generateId } from './mock';
+import { TodoApiService } from './todo-api.service';
+import { StorageApiService } from './storage-api.service';
 
 @Component({
   selector: 'app-root',

@@ -3,6 +3,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
+import { StorageApiService } from './storage-api.service';
+import { TodoApiService } from './todo-api.service';
+
 import { TodoStatusFilterPipe } from './todo-status-filter.pipe';
 
 @NgModule({
@@ -14,7 +17,9 @@ import { TodoStatusFilterPipe } from './todo-status-filter.pipe';
     BrowserModule,
     HttpModule
   ],
-  providers: [{provide: 'api', useValue: 'http://localhost:3000'}],
+  providers: [{provide: 'api',
+              useValue: 'http://localhost:3000'},
+              TodoApiService,StorageApiService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
