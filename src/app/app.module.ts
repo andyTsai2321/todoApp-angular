@@ -18,7 +18,7 @@ import { TodoStatusFilterPipe } from './todo-status-filter.pipe';
     HttpModule
   ],
   providers: [{provide: 'api',
-              useValue: 'http://localhost:3000'},
+              useValue: 'http://localhost:3000/api'},
               TodoApiService,StorageApiService],
   bootstrap: [AppComponent]
 })
